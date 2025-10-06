@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Benefits Tracker">
+    <title>Credit Card Benefits Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .current-date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #4c51bf;
+            color: white;
+        }
+
+        .alerts {
+            background: #fed7d7;
+            border-left: 4px solid #f56565;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alerts.show {
+            display: block;
+        }
+
+        .alert-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #742a2a;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .card-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .card-logo {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .amex {
+            background: #006fcf;
+            color: white;
+        }
+
+        .chase {
+            background: #0d4f8b;
+            color: white;
+        }
+
+        .frequency-group {
+            margin-bottom: 25px;
+        }
+
+        .frequency-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .frequency-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .benefit-item:hover {
+            background: #edf2f7;
+        }
+
+        .benefit-item.expiring-soon {
+            background: #fff5f5;
+            border-left: 3px solid #f56565;
+        }
+
+        .benefit-info {
+            flex: 1;
+        }
+
+        .benefit-name {
+            font-size: 15px;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .benefit-status {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .benefit-status.warning {
+            color: #c53030;
+            font-weight: 600;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #48bb78;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4c51bf;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #718096;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-btn.active {
+            color: #4c51bf;
+            font-weight: 700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+                padding-bottom: 70px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .card-name {
+                font-size: 18px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💳 Benefits Tracker</h1>
+            <div class="current-date" id="currentDate"></div>
+        </header>
+
+        <div id="dashboardView">
+            <div class="alerts" id="alertsBox"></div>
+
+            <div class="stats">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="usedCount">0</div>
+                        <div class="stat-label">Used This Period</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="remainingCount">0</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="expiringCount">0</div>
+                        <div class="stat-label">Expiring Soon</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All Benefits</button>
+                <button class="filter-btn" data-filter="amex">Amex Platinum</button>
+                <button class="filter-btn" data-filter="chase">Chase Sapphire</button>
+                <button class="filter-btn" data-filter="unused">Unused Only</button>
+                <button class="filter-btn" data-filter="expiring">Expiring Soon</button>
+            </div>
+
+            <div id="benefitsList"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="history">History</button>
+    </div>
+
+    <script>
+        // IMPORTANT: Save this file as index.html and upload to your web server
+        // Once uploaded, you can access it from any device at your website URL
+        
+        // Benefits data structure
+        const benefits = {
+            amex: {
+                name: "American Express Platinum",
+                logo: "amex",
+                benefits: [
+                    { id: "amex-global-entry", name: "Global Entry Fee Credit", frequency: "quadrennial" },
+                    { id: "amex-airline", name: "United Airline Fee Credit ($200)", frequency: "annual" },
+                    { id: "amex-clear", name: "Clear Plus Credit", frequency: "annual" },
+                    { id: "amex-fhr", name: "Fine Hotels/Hotel Collection Credit ($300)", frequency: "semiannual" },
+                    { id: "amex-saks", name: "Saks Credit ($50)", frequency: "semiannual" },
+                    { id: "amex-resy", name: "Resy Credit ($100)", frequency: "quarterly" },
+                    { id: "amex-lululemon", name: "Lululemon Credit ($75)", frequency: "quarterly" },
+                    { id: "amex-entertainment", name: "Digital Entertainment Credit ($25)", frequency: "monthly" },
+                    { id: "amex-walmart", name: "Walmart+ Credit", frequency: "monthly" },
+                    { id: "amex-uber-one", name: "Uber One Credit", frequency: "monthly" },
+                    { id: "amex-uber-cash", name: "Uber Cash ($15)", frequency: "monthly" }
+                ]
+            },
+            chase: {
+                name: "Chase Sapphire Reserve",
+                logo: "chase",
+                benefits: [
+                    { id: "chase-global-entry", name: "Global Entry Fee Credit", frequency: "quadrennial" },
+                    { id: "chase-travel", name: "Travel Credit ($300)", frequency: "annual" },
+                    { id: "chase-edit-hotels", name: "The Edit Hotels Credit ($250)", frequency: "semiannual" },
+                    { id: "chase-stubhub", name: "StubHub Credit ($150)", frequency: "semiannual" },
+                    { id: "chase-dd-grocery", name: "DoorDash Grocery Credit", frequency: "monthly" },
+                    { id: "chase-dd-restaurant", name: "DoorDash Restaurant Credit", frequency: "monthly" },
+                    { id: "chase-lyft", name: "Lyft Credit ($10)", frequency: "monthly" },
+                    { id: "chase-peloton", name: "Peloton Credit ($10)", frequency: "monthly" }
+                ]
+            }
+        };
+
+        // State management
+        let state = {
+            benefits: {},
+            filter: 'all',
+            currentView: 'dashboard'
+        };
+
+        // Initialize app
+        function init() {
+            loadState();
+            updateCurrentDate();
+            checkAndResetPeriods();
+            renderDashboard();
+            setupEventListeners();
+            checkAlerts();
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('benefitsTrackerState');
+            if (saved) {
+                state = JSON.parse(saved);
+            } else {
+                // Initialize all benefits
+                Object.keys(benefits).forEach(card => {
+                    benefits[card].benefits.forEach(benefit => {
+                        state.benefits[benefit.id] = {
+                            used: false,
+                            lastReset: new Date().toISOString(),
+                            card: card,
+                            ...benefit
+                        };
+                    });
+                });
+                saveState();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('benefitsTrackerState', JSON.stringify(state));
+        }
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        function checkAndResetPeriods() {
+            const now = new Date();
+            let resetOccurred = false;
+
+            Object.keys(state.benefits).forEach(id => {
+                const benefit = state.benefits[id];
+                const lastReset = new Date(benefit.lastReset);
+                
+                if (shouldReset(benefit.frequency, lastReset, now)) {
+                    benefit.used = false;
+                    benefit.lastReset = now.toISOString();
+                    resetOccurred = true;
+                }
+            });
+
+            if (resetOccurred) {
+                saveState();
+            }
+        }
+
+        function shouldReset(frequency, lastReset, now) {
+            const yearDiff = now.getFullYear() - lastReset.getFullYear();
+            const monthDiff = (now.getFullYear() - lastReset.getFullYear()) * 12 + now.getMonth() - lastReset.getMonth();
+            
+            switch(frequency) {
+                case 'monthly':
+                    return monthDiff >= 1;
+                case 'quarterly':
+                    return monthDiff >= 3;
+                case 'semiannual':
+                    // Reset on Jan 1 (if last reset was in previous year's H2) or July 1 (if last reset was in current year's H1)
+                    const lastResetMonth = lastReset.getMonth();
+                    const currentMonth = now.getMonth();
+                    const currentYear = now.getFullYear();
+                    const lastResetYear = lastReset.getFullYear();
+                    
+                    // If it's a new year and last reset was in previous year's second half (Jul-Dec)
+                    if (currentYear > lastResetYear && lastResetMonth >= 6) {
+                        return true;
+                    }
+                    // If it's July or later and last reset was in first half (Jan-Jun) of same year
+                    if (currentYear === lastResetYear && currentMonth >= 6 && lastResetMonth < 6) {
+                        return true;
+                    }
+                    return false;
+                case 'annual':
+                    return yearDiff >= 1;
+                case 'quadrennial':
+                    return yearDiff >= 4;
+                default:
+                    return false;
+            }
+        }
+
+        function getDaysUntilReset(benefit) {
+            const lastReset = new Date(benefit.lastReset);
+            const now = new Date();
+            let nextReset;
+
+            switch(benefit.frequency) {
+                case 'monthly':
+                    nextReset = new Date(lastReset.getFullYear(), lastReset.getMonth() + 1, 1);
+                    break;
+                case 'quarterly':
+                    nextReset = new Date(lastReset.getFullYear(), lastReset.getMonth() + 3, 1);
+                    break;
+                case 'semiannual':
+                    // Determine which half we're in
+                    const currentMonth = now.getMonth();
+                    if (currentMonth < 6) {
+                        // First half (Jan-Jun), next reset is July 1
+                        nextReset = new Date(now.getFullYear(), 6, 1);
+                    } else {
+                        // Second half (Jul-Dec), next reset is Jan 1 next year
+                        nextReset = new Date(now.getFullYear() + 1, 0, 1);
+                    }
+                    break;
+                case 'annual':
+                    nextReset = new Date(lastReset.getFullYear() + 1, 0, 1);
+                    break;
+                case 'quadrennial':
+                    nextReset = new Date(lastReset.getFullYear() + 4, 0, 1);
+                    break;
+            }
+
+            const diff = nextReset - now;
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
+        function checkAlerts() {
+            const alerts = [];
+            const now = new Date();
+
+            Object.values(state.benefits).forEach(benefit => {
+                const daysLeft = getDaysUntilReset(benefit);
+                
+                if (!benefit.used && daysLeft <= 5 && daysLeft > 0) {
+                    alerts.push(`⚠️ ${benefit.name} expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`);
+                }
+            });
+
+            const alertsBox = document.getElementById('alertsBox');
+            if (alerts.length > 0) {
+                alertsBox.innerHTML = alerts.map(alert => `<div class="alert-item">${alert}</div>`).join('');
+                alertsBox.classList.add('show');
+            } else {
+                alertsBox.classList.remove('show');
+            }
+        }
+
+        function renderDashboard() {
+            const benefitsList = document.getElementById('benefitsList');
+            benefitsList.innerHTML = '';
+
+            // Calculate stats
+            const allBenefits = Object.values(state.benefits);
+            const used = allBenefits.filter(b => b.used).length;
+            const remaining = allBenefits.length - used;
+            const expiring = allBenefits.filter(b => !b.used && getDaysUntilReset(b) <= 5).length;
+
+            document.getElementById('usedCount').textContent = used;
+            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('expiringCount').textContent = expiring;
+
+            // Group benefits by card
+            const cards = ['amex', 'chase'];
+            
+            cards.forEach(cardKey => {
+                const card = benefits[cardKey];
+                const cardBenefits = Object.values(state.benefits).filter(b => b.card === cardKey);
+                
+                // Apply filters
+                let filteredBenefits = cardBenefits;
+                if (state.filter === 'unused') {
+                    filteredBenefits = cardBenefits.filter(b => !b.used);
+                } else if (state.filter === 'expiring') {
+                    filteredBenefits = cardBenefits.filter(b => !b.used && getDaysUntilReset(b) <= 5);
+                } else if (state.filter !== 'all' && state.filter !== cardKey) {
+                    return;
+                }
+
+                if (filteredBenefits.length === 0 && state.filter !== 'all') return;
+
+                const cardSection = document.createElement('div');
+                cardSection.className = 'card-section';
+                
+                cardSection.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-logo ${card.logo}">${card.logo.toUpperCase()}</div>
+                    </div>
+                `;
+
+                // Group by frequency
+                const frequencies = ['monthly', 'quarterly', 'semiannual', 'annual', 'quadrennial'];
+                const frequencyLabels = {
+                    monthly: 'Monthly',
+                    quarterly: 'Quarterly',
+                    semiannual: 'Semi-Annual',
+                    annual: 'Annual',
+                    quadrennial: 'Every 4 Years'
+                };
+
+                frequencies.forEach(freq => {
+                    const freqBenefits = filteredBenefits.filter(b => b.frequency === freq);
+                    if (freqBenefits.length === 0) return;
+
+                    const freqGroup = document.createElement('div');
+                    freqGroup.className = 'frequency-group';
+                    freqGroup.innerHTML = `<div class="frequency-title">${frequencyLabels[freq]}</div>`;
+
+                    freqBenefits.forEach(benefit => {
+                        const daysLeft = getDaysUntilReset(benefit);
+                        const isExpiringSoon = !benefit.used && daysLeft <= 5;
+                        
+                        const benefitItem = document.createElement('div');
+                        benefitItem.className = `benefit-item ${isExpiringSoon ? 'expiring-soon' : ''}`;
+                        
+                        let statusText = benefit.used ? '✓ Used' : `${daysLeft} days left`;
+                        let statusClass = isExpiringSoon ? 'warning' : '';
+                        
+                        benefitItem.innerHTML = `
+                            <div class="benefit-info">
+                                <div class="benefit-name">${benefit.name}</div>
+                                <div class="benefit-status ${statusClass}">${statusText}</div>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" class="checkbox" data-id="${benefit.id}" ${benefit.used ? 'checked' : ''}>
+                            </div>
+                        `;
+
+                        freqGroup.appendChild(benefitItem);
+                    });
+
+                    cardSection.appendChild(freqGroup);
+                });
+
+                benefitsList.appendChild(cardSection);
+            });
+        }
+
+        function setupEventListeners() {
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.filter = e.target.dataset.filter;
+                    renderDashboard();
+                });
+            });
+
+            // Checkbox delegation
+            document.getElementById('benefitsList').addEventListener('change', (e) => {
+                if (e.target.classList.contains('checkbox')) {
+                    const benefitId = e.target.dataset.id;
+                    state.benefits[benefitId].used = e.target.checked;
+                    saveState();
+                    renderDashboard();
+                    checkAlerts();
+                }
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.currentView = e.target.dataset.view;
+                    
+                    if (state.currentView === 'history') {
+                        alert('History view coming soon! This will show your usage patterns over time.');
+                    }
+                });
+            });
+        }
+
+        // Initialize on load
+        init();
+
+        // Check for resets daily
+        setInterval(checkAndResetPeriods, 1000 * 60 * 60); // Check every hour
+    </script>
+</body>
+</html>
