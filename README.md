@@ -7,4 +7,5 @@ All data is stored locally only.
 
 Can be saved to an iPhone home screen by navigating to:
 https://daviddytang.com/credit_card_benefits/
+
 Then select Share > Add to Home Screen
